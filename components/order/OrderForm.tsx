@@ -7,6 +7,7 @@ import {
   formatCurrency,
 } from "@/lib/orders/pricing";
 import { validateOrderInput } from "@/lib/orders/validation";
+import { MAX_ADDRESS_LINES, limitAddressLines } from "@/lib/orders/address";
 import type { ApiErrorResponse, CreateOrderResponse, OrderInput } from "@/types/order";
 import { Button } from "@/components/ui/Button";
 import { Bilingual } from "@/components/ui/Bilingual";
@@ -190,8 +191,6 @@ export function OrderForm() {
             id="customerPhone"
             labelBn="মোবাইল নম্বর"
             labelEn="Mobile Number"
-            hintBn="বাংলাদেশি মোবাইল নম্বর"
-            hintEn="Bangladeshi mobile number"
             error={fieldErrors.customerPhone}
             value={form.customerPhone}
             onChange={(v) => update("customerPhone", v)}
@@ -208,6 +207,7 @@ export function OrderForm() {
             onChange={(v) => update("customerAddress", v)}
             disabled={submitting}
             multiline
+            maxLines={MAX_ADDRESS_LINES}
             autoComplete="street-address"
           />
         </section>
@@ -263,6 +263,7 @@ interface FieldProps {
   hintEn?: string;
   disabled?: boolean;
   multiline?: boolean;
+  maxLines?: number;
   inputMode?: "tel" | "text";
   autoComplete?: string;
 }
@@ -278,6 +279,7 @@ function Field({
   hintEn,
   disabled,
   multiline,
+  maxLines,
   inputMode,
   autoComplete,
 }: FieldProps) {
@@ -294,14 +296,16 @@ function Field({
         <textarea
           id={id}
           name={id}
-          rows={3}
+          rows={maxLines ?? 3}
           value={value}
           disabled={disabled}
           autoComplete={autoComplete}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy || undefined}
-          onChange={(e) => onChange(e.target.value)}
-          className="field-input resize-y"
+          onChange={(e) =>
+            onChange(maxLines ? limitAddressLines(e.target.value, maxLines) : e.target.value)
+          }
+          className="field-input address-input"
         />
       ) : (
         <input

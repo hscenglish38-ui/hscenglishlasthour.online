@@ -42,6 +42,21 @@ describe("OrderForm", () => {
     expect(screen.getByRole("button", { name: /place order/i })).toBeInTheDocument();
   });
 
+  it("uses the corrected সর্বমোট / Subtotal label and never the old উপমোট", () => {
+    renderForm();
+    expect(screen.getByText("সর্বমোট")).toBeInTheDocument();
+    expect(screen.getByText("Subtotal")).toBeInTheDocument();
+    expect(screen.queryByText("উপমোট")).not.toBeInTheDocument();
+    expect(screen.queryByText(/উপমোট/)).not.toBeInTheDocument();
+  });
+
+  it("removes the Bangladeshi mobile number hint label but keeps the phone field", () => {
+    renderForm();
+    expect(screen.queryByText("বাংলাদেশি মোবাইল নম্বর")).not.toBeInTheDocument();
+    expect(screen.queryByText("Bangladeshi mobile number")).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Mobile Number/i)).toBeInTheDocument();
+  });
+
   it("defaults the quantity to 1 and recalculates the total when changed", async () => {
     renderForm();
     const group = screen.getByRole("group", { name: /Book Quantity/i });
@@ -182,5 +197,39 @@ describe("OrderForm", () => {
     );
 
     expect(await screen.findByText(/order confirmed/i)).toBeInTheDocument();
+  });
+
+  it("renders the address as a fixed-height, non-resizable textarea", () => {
+    renderForm();
+    const address = screen.getByLabelText(/Address/i) as HTMLTextAreaElement;
+    expect(address.tagName).toBe("TEXTAREA");
+    expect(address).toHaveAttribute("rows", "3");
+    expect(address.className).toContain("address-input");
+    expect(address.className).not.toContain("resize-y");
+  });
+
+  it("keeps at most three lines when a longer address is pasted", async () => {
+    renderForm();
+    const address = screen.getByLabelText(/Address/i) as HTMLTextAreaElement;
+    await userEvent.click(address);
+    await userEvent.paste("Line 1\nLine 2\nLine 3\nLine 4\nLine 5");
+    expect(address.value).toBe("Line 1\nLine 2\nLine 3");
+    expect(address.value.split("\n")).toHaveLength(3);
+  });
+
+  it("collapses consecutive newlines so blank lines cannot bypass the limit", async () => {
+    renderForm();
+    const address = screen.getByLabelText(/Address/i) as HTMLTextAreaElement;
+    await userEvent.click(address);
+    await userEvent.paste("House 12\n\n\n\nRoad 5, Dhanmondi");
+    expect(address.value).toBe("House 12\nRoad 5, Dhanmondi");
+  });
+
+  it("never lets a fourth line be entered by typing", async () => {
+    renderForm();
+    const address = screen.getByLabelText(/Address/i) as HTMLTextAreaElement;
+    await userEvent.click(address);
+    await userEvent.type(address, "L1{enter}L2{enter}L3{enter}L4");
+    expect(address.value.split("\n").length).toBeLessThanOrEqual(3);
   });
 });

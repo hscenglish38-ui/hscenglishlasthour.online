@@ -70,6 +70,30 @@ describe("validateOrderInput", () => {
     expect(result.fieldErrors.customerPhone).toContain("Bangladeshi");
   });
 
+  it("accepts an address of up to three lines and collapses extra blank lines", () => {
+    const result = validateOrderInput({
+      ...valid,
+      customerAddress: "House 12\n\n\nRoad 5, Dhanmondi, Dhaka",
+    });
+    expect(result.success).toBe(true);
+    expect(result.data?.customerAddress).toBe("House 12\nRoad 5, Dhanmondi, Dhaka");
+  });
+
+  it("rejects an address with more than three lines", () => {
+    const result = validateOrderInput({
+      ...valid,
+      customerAddress: "Line one\nLine two\nLine three\nLine four",
+    });
+    expect(result.success).toBe(false);
+    expect(result.fieldErrors.customerAddress).toContain("3 lines");
+  });
+
+  it("rejects an address that normalizes below the minimum length", () => {
+    const result = validateOrderInput({ ...valid, customerAddress: "a\n\n\n\n\nb" });
+    expect(result.success).toBe(false);
+    expect(result.fieldErrors.customerAddress).toBeTruthy();
+  });
+
   it("rejects non-object input", () => {
     expect(validateOrderInput(null).success).toBe(false);
     expect(validateOrderInput("nope").success).toBe(false);

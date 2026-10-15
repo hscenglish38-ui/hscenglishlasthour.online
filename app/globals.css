@@ -540,6 +540,18 @@ body {
   color: var(--ink-muted);
 }
 
+/* Fixed-height address box: shows ~3 lines, never grows or shrinks. */
+.address-input {
+  display: block;
+  height: 5.75rem;
+  min-height: 5.75rem;
+  max-height: 5.75rem;
+  line-height: 1.5;
+  resize: none;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+
 /* ==========================================================================
    Segmented control
    ========================================================================== */

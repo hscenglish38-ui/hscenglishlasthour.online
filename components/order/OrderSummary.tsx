@@ -26,7 +26,7 @@ export function OrderSummary({ pricing }: { pricing: OrderPricing }) {
         </div>
         <div className="flex items-center justify-between gap-3 py-1.5">
           <dt className="min-w-0 text-[var(--ink-soft)]">
-            <Bilingual bn="উপমোট" en="Subtotal" />
+            <Bilingual bn="সর্বমোট" en="Subtotal" />
           </dt>
           <dd className="shrink-0 font-medium text-[var(--ink)]">
             {formatCurrency(pricing.subtotal)}

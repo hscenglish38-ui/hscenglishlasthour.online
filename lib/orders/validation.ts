@@ -1,6 +1,13 @@
 import { z } from "zod";
 import type { OrderInput } from "@/types/order";
 import { MAX_ORDER_QUANTITY, MIN_ORDER_QUANTITY } from "./pricing";
+import {
+  MAX_ADDRESS_LINES,
+  MAX_ADDRESS_LENGTH,
+  MIN_ADDRESS_LENGTH,
+  countAddressLines,
+  normalizeAddress,
+} from "./address";
 
 export interface ValidationResult {
   success: boolean;
@@ -21,8 +28,8 @@ const schema = z.object({
   customerAddress: z
     .string()
     .trim()
-    .min(5, "আপনার ডেলিভারি ঠিকানা লিখুন। / Please enter your delivery address.")
-    .max(500, "ঠিকানা অনেক বড়। / Address is too long."),
+    .min(MIN_ADDRESS_LENGTH, "আপনার ডেলিভারি ঠিকানা লিখুন। / Please enter your delivery address.")
+    .max(MAX_ADDRESS_LENGTH, "ঠিকানা অনেক বড়। / Address is too long."),
 });
 
 /**
@@ -103,13 +110,31 @@ export function validateOrderInput(input: unknown): ValidationResult {
     return { success: false, fieldErrors: { quantity: quantity.message } };
   }
 
+  const address = normalizeAddress(parsed.data.customerAddress);
+  if (address.length < MIN_ADDRESS_LENGTH) {
+    return {
+      success: false,
+      fieldErrors: {
+        customerAddress: "আপনার ডেলিভারি ঠিকানা লিখুন। / Please enter your delivery address.",
+      },
+    };
+  }
+  if (countAddressLines(address) > MAX_ADDRESS_LINES) {
+    return {
+      success: false,
+      fieldErrors: {
+        customerAddress: `ঠিকানা সর্বোচ্চ ${MAX_ADDRESS_LINES} লাইনের হতে হবে। / Address can be at most ${MAX_ADDRESS_LINES} lines.`,
+      },
+    };
+  }
+
   return {
     success: true,
     fieldErrors: {},
     data: {
       customerName: parsed.data.customerName,
       customerPhone: phone,
-      customerAddress: parsed.data.customerAddress,
+      customerAddress: address,
       quantity: quantity.value,
     },
   };

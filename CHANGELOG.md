@@ -2,6 +2,21 @@
 
 Format loosely follows Keep a Changelog. Dates are ISO.
 
+## [1.7.1] — 2026-10-16
+
+Checkout wording fixes and a fixed, 3-line address box.
+
+### Changed
+- **Address field is now a fixed-height textarea.** `components/order/OrderForm.tsx` renders the address as a `<textarea rows={3} className="field-input address-input">`; `app/globals.css` gives `.address-input` a fixed `5.75rem` (≈92px) height with `resize: none`, `line-height: 1.5` and `overflow-y: auto`, so the box comfortably shows 2–3 lines and never grows, shrinks, or auto-resizes while typing. Width never exceeds its parent (`box-sizing: border-box`).
+- **Maximum three address lines (client + server).** New `lib/orders/address.ts` shares `MAX_ADDRESS_LINES = 3` and helpers. The controlled textarea clamps input to three content lines, collapses consecutive newlines, and drops a fourth line whether typed or pasted. `lib/orders/validation.ts` independently normalizes the stored address (unify CRLF, trim, collapse blank lines) and rejects more than three lines with a bilingual message — no silent truncation server-side. Existing min-5 / max-500 address length validation is preserved.
+- **Removed the visible phone hint** `বাংলাদেশি মোবাইল নম্বর / Bangladeshi mobile number` from the order form (the field, its label `মোবাইল নম্বর / Mobile Number`, and phone validation are unchanged; the validation message still mentions a valid Bangladeshi number).
+- **Corrected the summary label** `উপমোট` → `সর্বমোট` (`OrderSummary`), i.e. Subtotal.
+
+### Notes
+- Verified at 320/360/390/430/768/1024/1280/1440px: the address box is a constant 92px tall, `resize: none`, width equals its parent (never overflows), `scrollHeight === clientHeight` (no inner scroll); typing 1/2/3 lines keeps the height at 92px; pasting five lines clamps to three; blank lines collapse (`A\n\n\n\nB` → `A\nB`).
+- `POST /api/orders` rejects a 4-line address with `400` and `fieldErrors.customerAddress` (no DB write), and ranks it above the min-length check.
+- Tests: +9 (address helpers/validation and OrderForm) → **123 passing (13 files)**.
+
 ## [1.7.0] — 2026-10-16
 
 Bengali typography, premium glass polish, a quantity stepper, and overflow fixes.
