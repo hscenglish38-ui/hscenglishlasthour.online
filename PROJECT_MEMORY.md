@@ -28,7 +28,8 @@ Phase 1 of `hscenglishlasthour`: crystal-glass, mobile-first single-book store. 
 - Title/brand: `HSC English Last Hour`
 
 ## State
-- Lint/typecheck/test/build clean (108 tests, 12 files).
+- Lint/typecheck/test/build clean (114 tests, 13 files).
+- Bengali typography: Noto Sans Bengali self-hosted via `next/font/google` (`--font-bengali`); responsive type scale via `--fs-*` tokens. Order quantity uses an accessible −/+ stepper (1–20).
 - Dev server: http://localhost:3000 verified; reader spread confirmed via headless-browser DOM check.
 - Supabase backend implemented: `loadPublishedBook` (`lib/book/source.ts`), `orders` insert (`lib/orders/create-order.ts`), migrations/RLS/storage, realtime `BookProvider`, `/api/book` + `/api/book/preview-pdf`. Falls back to local config when unconfigured.
 - Live Supabase connected (project ref `qrkzygdvckuirqmmdxcj`): migrations applied (including `20261015120000_add_orders_quantity.sql`), RLS + private `book-assets` bucket, signed assets, realtime, and real order inserts verified. Free preview ceiling is 10 pages (`MAX_PREVIEW_PAGE_COUNT`); orders carry a `quantity` (1–20).

@@ -1,14 +1,15 @@
 # Current Status
 
-**Phase 1 — HSC English Last Hour (Supabase migration)**. Date: 2026-10-15.
+**Phase 1 — HSC English Last Hour (Supabase migration)**. Date: 2026-10-16.
 
 ## What exists
 
 - Premium crystal-glass/glassmorphism landing page with book preview + order.
+- Bengali typography: **Noto Sans Bengali** (variable) self-hosted via `next/font/google` (`--font-bengali`); Bangla text uses `.bn`/`[lang="bn"]` with comfortable line height, Latin uses Geist, and a restrained responsive type scale (`--fs-*`) keeps headings/labels/inputs consistent across 320–1440px.
 - Colorful 3D crystal-glass redesign: layered animated background orbs, frosted glass panels, gradient primary CTAs. Desktop layout = large reader on the left + compact sticky order sidebar on the right; mobile/tablet = reader first with the order form stacked below. Verified at 320–1920 px with zero horizontal overflow and no clipped controls.
 - Free-preview ceiling is 10 pages (`MAX_PREVIEW_PAGE_COUNT`/`DEFAULT_PREVIEW_PAGE_COUNT` in `lib/book/config.ts`); configured counts are clamped to it and the reader shows the Bangla "preview finished — order now" prompt at the limit. The cached preview PDF carries an `hsc-preview-limit:<n>` marker so `GET /api/book/preview-pdf` re-caches when the limit changes and never serves more pages than allowed.
 - Two reader formats: page-flip (Book Mode) with realistic dual-page spread on desktop, single page on mobile; PDF (PDF Mode). Zoom (in/out/reset/fit-width/fit-page), pinch-zoom, keyboard/swipe navigation, progress. End-of-preview detection lives in `lastVisiblePage()`/`isPreviewEnd()`.
-- Order form (name, BD phone, address, quantity 1–20) with client + server validation; the server recomputes unit price × quantity + delivery. The form is grouped into light `.info-box` sections (Customer Information / Book Quantity / Order Submission) and every label, hint, button, success box, COD note, and error message is bilingual (Bangla first, then `/`, then English) via `components/ui/Bilingual.tsx`.
+- Order form (name, BD phone, address, quantity 1–20) with client + server validation; the server recomputes unit price × quantity + delivery. The form is grouped into light `.info-box` sections (Customer Information / Book Quantity) and every label, hint, button, success box, payment row, and error message is bilingual (Bangla first, then `/`, then English) via `components/ui/Bilingual.tsx`. Quantity is chosen with an accessible `[ − ] value [ + ]` stepper (`components/order/QuantityStepper.tsx`).
 - Server-authoritative pricing and Supabase-backed order endpoint (`orders` table with `quantity`, service-role client).
 - Info cards and the order summary use clearer borders/shadows (`--shadow-card*`/`--glass-outline*`, `.order-card`/`.order-summary`); light `.info-box`/`.order-summary` panels use the `--box-*` tokens (1px indigo border, 16px radius, soft shadow).
 - Content-loading architecture: real config + dev preview fixtures gated to development; graceful "preview coming soon" state when no content.
@@ -24,7 +25,7 @@
 | `npm install`            | Succeeds; `postinstall` copies pdf.js assets.      |
 | `npm run lint`           | Clean (exit 0).                                    |
 | `npm run typecheck`      | Clean (exit 0).                                    |
-| `npm test`               | 108 passing (Vitest, 12 files).                    |
+| `npm test`               | 114 passing (Vitest, 13 files).                    |
 | `npm run build`          | Success. `/` dynamic (`instant = false`), `/api/book`, `/api/book/preview-pdf`, `/api/orders` dynamic. |
 
 Dev server: **http://localhost:3000** verified GET / → 200; reader renders an open-book spread (desktop) / single page (mobile) via a real headless-browser DOM check; production shows the graceful "preview coming soon" state; preview assets served; no sample/dev fixture labels in public UI. Redesign verified at 320/360/375/390/414/430/768/1024/1280/1440/1600/1920 px via a temporary same-origin measurement harness (since removed): 0 px page overflow, 0 clipped controls, reader+order side-by-side from 1024 px with the reader at ~68–74% width, and order stacked below the reader on all smaller viewports.

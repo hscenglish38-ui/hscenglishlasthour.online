@@ -2,6 +2,28 @@
 
 Format loosely follows Keep a Changelog. Dates are ISO.
 
+## [1.7.0] — 2026-10-16
+
+Bengali typography, premium glass polish, a quantity stepper, and overflow fixes.
+
+### Added
+- Bengali webfont: **Noto Sans Bengali** (variable, SIL OFL) self-hosted via `next/font/google` in `app/layout.tsx` (`--font-bengali`). Bangla text now renders with a real, consistent typeface on every platform (macOS, Windows, Android, iOS) instead of relying on system fonts; `.bn`/`[lang="bn"]` use it with `line-height: 1.75` so vowel signs and conjuncts are not clipped. Latin text keeps Geist, and the body stack falls back to the Bengali font for mixed content.
+- `components/order/QuantityStepper.tsx` — accessible `[ − ] value [ + ]` stepper replacing the quantity `<select>`; 1–20, buttons disable at the limits, labelled "পরিমাণ কমান / Decrease quantity" and "পরিমাণ বাড়ান / Increase quantity", `type="button"` so it never submits the form.
+- `MinusIcon`/`PlusIcon` in `components/ui/icons.tsx`.
+- Payment-method row in `OrderSummary` showing `পেমেন্ট / Payment: ক্যাশ অন ডেলিভারি / Cash on Delivery`.
+- Responsive type-scale tokens (`--fs-brand`, `--fs-section`, `--fs-title`, `--fs-label`, `--fs-input`, `--fs-help`, `--fs-btn`) and an `.eyebrow` helper.
+
+### Changed
+- **Overflow fixed:** the `.btn` nowrap rule made long bilingual labels spill out of their card. Added `.btn-block` (full width, `white-space: normal`, auto height, `min-width: 0`) so `অর্ডার করুন / Place Order` and the loading state stay inside the parent card. Summary rows use `min-w-0`/`shrink-0` so prices never overflow.
+- Order card is lighter and more compact: the redundant Cash-on-Delivery note was removed from the submit section (it now lives in the order-summary payment row), and the order button stands alone in its own row.
+- Typography hierarchy tightened: brand wordmark uses `--fs-brand` (≈18→22.5px), the order title `text-lg`, and `.info-box-title` is now a proper section heading (16–19px) instead of a tiny uppercase eyebrow.
+- Compact sidebar: desktop/aside grid is `minmax(300px,320px)` at `lg` and `minmax(320px,360px)` at `xl` (reader keeps the majority width).
+- `.info-box`/`.order-summary`/`.field-input`/`.field-label` now use the shared type tokens for consistent sizing.
+
+### Notes
+- Verified with headless Chrome at 320/360/390/430/768/1024/1280/1440px: zero horizontal page overflow, order button and payment row inside their cards, stepper buttons 40×40 and correctly disabled at 1/20, sidebar 320–360px on desktop. Runtime check: `+`/`−` update the total immediately (700/unit + 90 delivery) and clamp at 1 and 20.
+- PDF preview still serves 7 real source pages (limit marker `hsc-preview-limit:10`, full PDF private); `POST /api/orders` still rejects quantity 0/21 with 400.
+
 ## [1.6.0] — 2026-10-15
 
 Bilingual (Bangla / English) labels and clearly visible information boxes.

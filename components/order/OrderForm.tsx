@@ -1,14 +1,19 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { MAX_ORDER_QUANTITY, MIN_ORDER_QUANTITY, computeTotals, formatCurrency } from "@/lib/orders/pricing";
+import {
+  MIN_ORDER_QUANTITY,
+  computeTotals,
+  formatCurrency,
+} from "@/lib/orders/pricing";
 import { validateOrderInput } from "@/lib/orders/validation";
 import type { ApiErrorResponse, CreateOrderResponse, OrderInput } from "@/types/order";
 import { Button } from "@/components/ui/Button";
 import { Bilingual } from "@/components/ui/Bilingual";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { BookIcon, CheckCircleIcon, TruckIcon } from "@/components/ui/icons";
+import { BookIcon, CheckCircleIcon } from "@/components/ui/icons";
 import { OrderSummary } from "./OrderSummary";
+import { QuantityStepper } from "./QuantityStepper";
 import { useBook } from "@/components/book/BookProvider";
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -19,11 +24,6 @@ const EMPTY_FORM: OrderInput = {
   customerAddress: "",
   quantity: MIN_ORDER_QUANTITY,
 };
-
-const QUANTITY_OPTIONS = Array.from(
-  { length: MAX_ORDER_QUANTITY - MIN_ORDER_QUANTITY + 1 },
-  (_, index) => MIN_ORDER_QUANTITY + index,
-);
 
 export function OrderForm() {
   const { book } = useBook();
@@ -146,10 +146,10 @@ export function OrderForm() {
           </span>
         )}
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--ink-muted)]">
+          <p className="eyebrow">
             <Bilingual bn="অর্ডার" en="Order" />
           </p>
-          <h2 className="truncate text-base font-bold text-[var(--ink)]">
+          <h2 className="truncate text-lg font-bold text-[var(--ink)]">
             {book.title || "HSC English Last Hour"}
           </h2>
           {book.author ? (
@@ -213,57 +213,40 @@ export function OrderForm() {
         </section>
 
         <section className="info-box" aria-label="Book quantity">
-          <label htmlFor="quantity" className="field-label">
+          <span id="quantity-label" className="field-label">
             <Bilingual bn="বইয়ের সংখ্যা" en="Book Quantity" />
-          </label>
-          <div className="flex items-center gap-3">
-            <select
-              id="quantity"
-              name="quantity"
-              value={form.quantity}
-              disabled={submitting}
-              aria-invalid={Boolean(fieldErrors.quantity)}
-              aria-describedby={fieldErrors.quantity ? "quantity-error" : "quantity-hint"}
-              onChange={(e) => update("quantity", Number(e.target.value))}
-              className="field-input w-24"
-            >
-              {QUANTITY_OPTIONS.map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-            <span className="text-sm text-[var(--ink-soft)]" aria-hidden="true">
-              {form.quantity} {form.quantity === 1 ? "copy" : "copies"}
-            </span>
-          </div>
+          </span>
+          <QuantityStepper
+            value={form.quantity}
+            onChange={(value) => update("quantity", value)}
+            labelledBy="quantity-label"
+            describedBy={fieldErrors.quantity ? "quantity-error" : "quantity-hint"}
+            disabled={submitting}
+          />
           {fieldErrors.quantity ? (
-            <p id="quantity-error" className="mt-1 text-xs font-medium text-red-600">
+            <p id="quantity-error" className="mt-2 text-xs font-medium text-red-600">
               {fieldErrors.quantity}
             </p>
           ) : (
-            <p id="quantity-hint" className="mt-1 text-xs text-[var(--ink-muted)]">
-              <Bilingual bn="১–২০ কপি বেছে নিন।" en="Choose 1–20 copies." />
+            <p id="quantity-hint" className="mt-2 text-xs text-[var(--ink-muted)]">
+              <Bilingual bn="সর্বনিম্ন ১, সর্বোচ্চ ২০ কপি।" en="Minimum 1, maximum 20 copies." />
             </p>
           )}
         </section>
 
-        <section className="info-box" aria-label="Order submission">
-          <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitting}>
-            {submitting ? (
-              <Bilingual bn="অর্ডার পাঠানো হচ্ছে…" en="Placing order…" />
-            ) : (
-              <Bilingual bn="অর্ডার করুন" en="Place Order (Cash on Delivery)" />
-            )}
-          </Button>
-          <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-[var(--ink-muted)]">
-            <TruckIcon width={14} height={14} />
-            <Bilingual
-              bn="ক্যাশ অন ডেলিভারি — বই হাতে পেয়ে টাকা দিন।"
-              en="Cash on Delivery — pay when you receive the book."
-            />
-          </p>
-        </section>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          className="btn-block"
+          disabled={submitting}
+        >
+          {submitting ? (
+            <Bilingual bn="অর্ডার পাঠানো হচ্ছে…" en="Placing order…" />
+          ) : (
+            <Bilingual bn="অর্ডার করুন" en="Place Order" />
+          )}
+        </Button>
       </form>
     </GlassCard>
   );

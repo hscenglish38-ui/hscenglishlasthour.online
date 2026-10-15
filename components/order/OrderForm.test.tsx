@@ -44,12 +44,16 @@ describe("OrderForm", () => {
 
   it("defaults the quantity to 1 and recalculates the total when changed", async () => {
     renderForm();
-    const quantity = screen.getByLabelText(/Book Quantity/i, { selector: "select" });
-    expect(quantity).toHaveValue("1");
+    const group = screen.getByRole("group", { name: /Book Quantity/i });
+    expect(group).toHaveTextContent("1");
     expect(screen.getByText("৳410")).toBeInTheDocument();
 
-    await userEvent.selectOptions(quantity, "4");
+    const increase = screen.getByRole("button", { name: /Increase quantity/i });
+    await userEvent.click(increase);
+    await userEvent.click(increase);
+    await userEvent.click(increase);
 
+    expect(group).toHaveTextContent("4");
     expect(screen.getByText("৳1,460")).toBeInTheDocument();
     expect(screen.getByText("৳1,400")).toBeInTheDocument();
   });
@@ -75,10 +79,7 @@ describe("OrderForm", () => {
     vi.stubGlobal("fetch", fetchMock);
     renderForm();
 
-    await userEvent.selectOptions(
-      screen.getByLabelText(/Book Quantity/i, { selector: "select" }),
-      "2",
-    );
+    await userEvent.click(screen.getByRole("button", { name: /Increase quantity/i }));
     await fillValidForm();
     await userEvent.click(screen.getByRole("button", { name: /place order/i }));
 

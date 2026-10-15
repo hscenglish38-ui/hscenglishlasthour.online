@@ -20,7 +20,7 @@ export function BookExperience() {
             <BookIcon width={18} height={18} />
           </span>
           <div className="min-w-0">
-            <p className="brand-wordmark truncate text-sm font-bold sm:text-lg">HSC English Last Hour</p>
+            <p className="brand-wordmark truncate font-bold">HSC English Last Hour</p>
             <p className="hidden truncate text-xs text-[var(--ink-muted)] sm:block">{book.title}</p>
           </div>
         </div>
@@ -37,7 +37,7 @@ export function BookExperience() {
         </div>
       </header>
 
-      <div className="mt-4 grid flex-1 grid-cols-1 items-start gap-5 sm:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,300px)] lg:gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(340px,380px)]">
+      <div className="mt-4 grid flex-1 grid-cols-1 items-start gap-5 sm:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(300px,320px)] lg:gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(320px,360px)]">
         <section data-reader className="min-w-0">
           <BookReader orderSectionId="order" />
         </section>
