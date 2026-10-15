@@ -32,6 +32,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# generated pdf.js runtime assets (recreated on install by scripts/copy-pdf-worker.mjs)
+/public/pdf.worker.min.mjs
+/public/standard_fonts/
+
+# supabase (local CLI state)
+/supabase/.temp
+/supabase/.branches
 
 # vercel
 .vercel

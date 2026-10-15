@@ -1,0 +1,17 @@
+-- Optional local seed: insert the single book (unpublished by default).
+-- Uncomment and run via `supabase db reset` locally only. Do not commit a
+-- production-ready published seed with fabricated content.
+
+-- insert into public.books (id, title, author, description, is_published, price, offer_price, delivery_charge, preview_page_count)
+-- values (
+--   'hscenglishlasthour',
+--   'HSC English Last Hour',
+--   'HSC English Last Hour',
+--   null,
+--   false,
+--   350.00,
+--   null,
+--   60.00,
+--   4
+-- )
+-- on conflict (id) do nothing;
