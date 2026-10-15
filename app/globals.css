@@ -33,6 +33,13 @@
   --glass-edge-cyan: rgba(34, 211, 238, 0.5);
   --glass-edge-violet: rgba(139, 92, 246, 0.45);
 
+  /* Light information boxes (cards) */
+  --box-bg: rgba(255, 255, 255, 0.94);
+  --box-tint: rgba(238, 242, 255, 0.92);
+  --box-border: rgba(99, 102, 241, 0.3);
+  --box-shadow: 0 10px 26px -20px rgba(30, 27, 75, 0.5), 0 2px 8px -6px rgba(15, 23, 42, 0.14);
+  --input-border: rgba(148, 163, 184, 0.55);
+
   /* Elevation */
   --shadow-ambient: 0 30px 80px -38px rgba(49, 46, 129, 0.55);
   --shadow-ambient-soft: 0 20px 55px -34px rgba(49, 46, 129, 0.45);
@@ -202,8 +209,24 @@ body {
   box-shadow: var(--shadow-card), 0 0 0 1px var(--glass-outline), var(--shadow-inner);
 }
 
+/* Light, clearly-bordered information boxes (customer info, quantity, price,
+   totals, order submission). Distinct from the page background, readable, and
+   consistent across the order flow. */
+.info-box,
 .order-summary {
-  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow-contact);
+  border-radius: var(--r-md);
+  border: 1px solid var(--box-border);
+  background: linear-gradient(158deg, var(--box-bg), var(--box-tint));
+  box-shadow: var(--box-shadow);
+  padding: 0.875rem 0.9rem;
+}
+
+.info-box-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
 }
 
 .glass-control {
@@ -355,10 +378,10 @@ body {
 
 .field-input {
   width: 100%;
-  border-radius: var(--r-md);
-  border: 1px solid var(--glass-border);
-  background: rgba(255, 255, 255, 0.68);
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--input-border);
+  background: #ffffff;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
   color: var(--ink);
   font-size: 0.9375rem;
   padding: 0.625rem 0.8125rem;
@@ -388,7 +411,7 @@ body {
 }
 
 .field-input:disabled {
-  background: rgba(255, 255, 255, 0.4);
+  background: #f1f5f9;
   color: var(--ink-muted);
 }
 

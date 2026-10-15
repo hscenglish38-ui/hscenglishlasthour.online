@@ -2,6 +2,23 @@
 
 Format loosely follows Keep a Changelog. Dates are ISO.
 
+## [1.6.0] — 2026-10-15
+
+Bilingual (Bangla / English) labels and clearly visible information boxes.
+
+### Added
+- `components/ui/Bilingual.tsx` — renders the Bangla label in `lang="bn"` with the `.bn` font, a muted `/` separator (aria-hidden), then the English label.
+- Light information-box tokens/styles in `app/globals.css`: `--box-bg`, `--box-tint`, `--box-border`, `--box-shadow`, `--input-border`; `.info-box`/`.order-summary` (light gradient, 1px indigo border, 16px radius, soft shadow, ~14px padding) and `.info-box-title`.
+
+### Changed
+- Order form now groups fields into three labelled `.info-box` sections (Customer Information, Book Quantity, Order Submission); every label, hint, button, success box, and COD note is bilingual (Bangla first, then `/`, then English).
+- Order summary and all user-facing order messages (validation, create-order, API route) are bilingual.
+- `.field-input` restyled: white background, `--input-border`, `--r-sm` radius, `#f1f5f9` disabled state.
+- Removed the example mobile number from the phone hint and validation error (no more `01712345678` sample).
+
+### Notes
+- Verified via headless CDP at 360/390/820/1440 px: 4 info boxes with the intended border/radius/shadow/padding, white inputs, bilingual labels present, zero horizontal overflow.
+
 ## [1.5.0] — 2026-10-15
 
 Expanded the free preview, added order quantity, and clarified card styling.

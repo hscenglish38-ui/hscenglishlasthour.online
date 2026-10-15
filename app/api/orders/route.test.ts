@@ -79,7 +79,9 @@ describe("POST /api/orders", () => {
     const response = await POST(postRequest("not-json", "10.0.0.3"));
 
     expect(response.status).toBe(400);
-    await expect(response.json()).resolves.toMatchObject({ error: "Invalid request body." });
+    await expect(response.json()).resolves.toMatchObject({
+      error: expect.stringContaining("Invalid request body."),
+    });
     expect(createOrder).not.toHaveBeenCalled();
   });
 
@@ -107,7 +109,7 @@ describe("POST /api/orders", () => {
 
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toMatchObject({
-      error: "Could not place your order. Please try again.",
+      error: expect.stringContaining("Could not place your order. Please try again."),
     });
     spy.mockRestore();
   });

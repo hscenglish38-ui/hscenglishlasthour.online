@@ -12,14 +12,17 @@ const schema = z.object({
   customerName: z
     .string()
     .trim()
-    .min(2, "Please enter your full name.")
-    .max(100, "Name is too long."),
-  customerPhone: z.string().trim().min(1, "Please enter your mobile number."),
+    .min(2, "আপনার পূর্ণ নাম লিখুন। / Please enter your full name.")
+    .max(100, "নাম অনেক বড়। / Name is too long."),
+  customerPhone: z
+    .string()
+    .trim()
+    .min(1, "আপনার মোবাইল নম্বর লিখুন। / Please enter your mobile number."),
   customerAddress: z
     .string()
     .trim()
-    .min(5, "Please enter your delivery address.")
-    .max(500, "Address is too long."),
+    .min(5, "আপনার ডেলিভারি ঠিকানা লিখুন। / Please enter your delivery address.")
+    .max(500, "ঠিকানা অনেক বড়। / Address is too long."),
 });
 
 /**
@@ -62,13 +65,13 @@ export function parseQuantity(
   if (!Number.isFinite(num) || !Number.isInteger(num)) {
     return {
       ok: false,
-      message: `Enter a whole-number quantity between ${MIN_ORDER_QUANTITY} and ${MAX_ORDER_QUANTITY}.`,
+      message: `পূর্ণসংখ্যায় বইয়ের সংখ্যা ${MIN_ORDER_QUANTITY} থেকে ${MAX_ORDER_QUANTITY} এর মধ্যে দিন। / Enter a whole-number quantity between ${MIN_ORDER_QUANTITY} and ${MAX_ORDER_QUANTITY}.`,
     };
   }
   if (num < MIN_ORDER_QUANTITY || num > MAX_ORDER_QUANTITY) {
     return {
       ok: false,
-      message: `Quantity must be between ${MIN_ORDER_QUANTITY} and ${MAX_ORDER_QUANTITY}.`,
+      message: `বইয়ের সংখ্যা ${MIN_ORDER_QUANTITY} থেকে ${MAX_ORDER_QUANTITY} এর মধ্যে হতে হবে। / Quantity must be between ${MIN_ORDER_QUANTITY} and ${MAX_ORDER_QUANTITY}.`,
     };
   }
   return { ok: true, value: num };
@@ -90,7 +93,7 @@ export function validateOrderInput(input: unknown): ValidationResult {
     return {
       success: false,
       fieldErrors: {
-        customerPhone: "Enter a valid Bangladeshi mobile number (e.g. 01712345678).",
+        customerPhone: "বৈধ বাংলাদেশি মোবাইল নম্বর দিন। / Enter a valid Bangladeshi mobile number.",
       },
     };
   }

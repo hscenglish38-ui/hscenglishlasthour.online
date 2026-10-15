@@ -22,9 +22,9 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 async function fillValidForm() {
-  await userEvent.type(screen.getByLabelText("Full name"), "Ayesha Rahman");
-  await userEvent.type(screen.getByLabelText("Mobile number"), "01712345678");
-  await userEvent.type(screen.getByLabelText("Delivery address"), "House 12, Road 5, Dhanmondi");
+  await userEvent.type(screen.getByLabelText(/Name/i), "Ayesha Rahman");
+  await userEvent.type(screen.getByLabelText(/Mobile Number/i), "01712345678");
+  await userEvent.type(screen.getByLabelText(/Address/i), "House 12, Road 5, Dhanmondi");
 }
 
 afterEach(() => {
@@ -32,19 +32,19 @@ afterEach(() => {
 });
 
 describe("OrderForm", () => {
-  it("shows the price breakdown and an Order Now button", () => {
+  it("shows the price breakdown and a Place Order button", () => {
     renderForm();
-    expect(screen.getByText("Book price (each)")).toBeInTheDocument();
-    expect(screen.getByText("Quantity", { selector: "dt" })).toBeInTheDocument();
+    expect(screen.getByText("Price per Book")).toBeInTheDocument();
+    expect(screen.getByText("Quantity")).toBeInTheDocument();
     expect(screen.getByText("Subtotal")).toBeInTheDocument();
-    expect(screen.getByText("Delivery charge")).toBeInTheDocument();
-    expect(screen.getByText("Total payable")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /order now/i })).toBeInTheDocument();
+    expect(screen.getByText("Delivery Charge")).toBeInTheDocument();
+    expect(screen.getByText("Total Price")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /place order/i })).toBeInTheDocument();
   });
 
   it("defaults the quantity to 1 and recalculates the total when changed", async () => {
     renderForm();
-    const quantity = screen.getByLabelText("Quantity");
+    const quantity = screen.getByLabelText(/Book Quantity/i, { selector: "select" });
     expect(quantity).toHaveValue("1");
     expect(screen.getByText("৳410")).toBeInTheDocument();
 
@@ -75,9 +75,12 @@ describe("OrderForm", () => {
     vi.stubGlobal("fetch", fetchMock);
     renderForm();
 
-    await userEvent.selectOptions(screen.getByLabelText("Quantity"), "2");
+    await userEvent.selectOptions(
+      screen.getByLabelText(/Book Quantity/i, { selector: "select" }),
+      "2",
+    );
     await fillValidForm();
-    await userEvent.click(screen.getByRole("button", { name: /order now/i }));
+    await userEvent.click(screen.getByRole("button", { name: /place order/i }));
 
     expect(await screen.findByText(/order confirmed/i)).toBeInTheDocument();
     const [, options] = fetchMock.mock.calls[0];
@@ -89,7 +92,7 @@ describe("OrderForm", () => {
     vi.stubGlobal("fetch", fetchMock);
     renderForm();
 
-    await userEvent.click(screen.getByRole("button", { name: /order now/i }));
+    await userEvent.click(screen.getByRole("button", { name: /place order/i }));
 
     expect(await screen.findByText(/enter your full name/i)).toBeInTheDocument();
     expect(screen.getByText(/enter your mobile number/i)).toBeInTheDocument();
@@ -113,7 +116,7 @@ describe("OrderForm", () => {
     renderForm();
 
     await fillValidForm();
-    await userEvent.click(screen.getByRole("button", { name: /order now/i }));
+    await userEvent.click(screen.getByRole("button", { name: /place order/i }));
 
     expect(await screen.findByText(/order confirmed/i)).toBeInTheDocument();
     expect(screen.getByText("abc123")).toBeInTheDocument();
@@ -137,11 +140,11 @@ describe("OrderForm", () => {
     renderForm();
 
     await fillValidForm();
-    await userEvent.click(screen.getByRole("button", { name: /order now/i }));
+    await userEvent.click(screen.getByRole("button", { name: /place order/i }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(/not configured/i);
     await waitFor(() => {
-      expect(screen.getByLabelText("Full name")).toHaveValue("Ayesha Rahman");
+      expect(screen.getByLabelText(/Name/i)).toHaveValue("Ayesha Rahman");
     });
   });
 
@@ -157,7 +160,7 @@ describe("OrderForm", () => {
     renderForm();
 
     await fillValidForm();
-    const button = screen.getByRole("button", { name: /order now/i });
+    const button = screen.getByRole("button", { name: /place order/i });
 
     await userEvent.click(button);
     expect(screen.getByRole("button", { name: /placing order/i })).toBeDisabled();

@@ -21,7 +21,11 @@ export const ORDERS_TABLE = "orders";
 export async function createOrder(input: unknown): Promise<CreateOrderResponse> {
   const validation = validateOrderInput(input);
   if (!validation.success || !validation.data) {
-    throw new OrderError("Please check the form and try again.", 400, validation.fieldErrors);
+    throw new OrderError(
+      "ফর্মটি দেখে আবার চেষ্টা করুন। / Please check the form and try again.",
+      400,
+      validation.fieldErrors,
+    );
   }
 
   const payload = input as { bookId?: unknown };
@@ -31,17 +35,17 @@ export async function createOrder(input: unknown): Promise<CreateOrderResponse> 
   if (payload.bookId !== undefined) {
     const providedId = String(payload.bookId).trim();
     if (providedId && providedId !== book.id) {
-      throw new OrderError("Invalid book selection.", 400);
+      throw new OrderError("বই নির্বাচন সঠিক নয়। / Invalid book selection.", 400);
     }
   }
 
   if (!book.isPublished) {
-    throw new OrderError("Ordering is not open yet.", 409);
+    throw new OrderError("অর্ডার এখনো চালু হয়নি। / Ordering is not open yet.", 409);
   }
 
   if (!isSupabaseAdminConfigured()) {
     throw new OrderError(
-      "Ordering is temporarily unavailable. Supabase is not configured on the server.",
+      "অর্ডার সাময়িকভাবে বন্ধ। সার্ভারে Supabase কনফিগার করা নেই। / Ordering is temporarily unavailable. Supabase is not configured on the server.",
       503,
     );
   }
@@ -78,16 +82,20 @@ export async function createOrder(input: unknown): Promise<CreateOrderResponse> 
     // publish check and the insert; treat it as "not available" rather than a
     // server error.
     if ((error as { code?: string } | null)?.code === "23503") {
-      throw new OrderError("This book is not available for ordering.", 409);
+      throw new OrderError("এই বইটি অর্ডারের জন্য উপলব্ধ নয়। / This book is not available for ordering.", 409);
     }
     console.error("Failed to persist order", error);
-    throw new OrderError("Could not place your order. Please try again.", 500);
+    throw new OrderError(
+      "আপনার অর্ডার নেওয়া যায়নি। আবার চেষ্টা করুন। / Could not place your order. Please try again.",
+      500,
+    );
   }
 
   return {
     orderId: String(data.id),
     book: { id: book.id, title: book.title },
     pricing,
-    message: "Your order has been received. We will call you to confirm delivery.",
+    message:
+      "আপনার অর্ডার পাওয়া গেছে। ডেলিভারি নিশ্চিত করতে আমরা আপনাকে কল করব। / Your order has been received. We will call you to confirm delivery.",
   };
 }

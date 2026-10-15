@@ -31,7 +31,10 @@ function errorResponse(body: ApiErrorResponse, status: number) {
 export async function POST(request: Request) {
   if (isRateLimited(clientKey(request))) {
     return errorResponse(
-      { error: "Too many order attempts. Please wait a minute and try again." },
+      {
+        error:
+          "অনেকবার অর্ডারের চেষ্টা হয়েছে। এক মিনিট অপেক্ষা করে আবার চেষ্টা করুন। / Too many order attempts. Please wait a minute and try again.",
+      },
       429,
     );
   }
@@ -40,11 +43,11 @@ export async function POST(request: Request) {
   try {
     const contentLength = request.headers.get("content-length");
     if (contentLength && Number(contentLength) > MAX_BODY_BYTES) {
-      return errorResponse({ error: "Request body too large." }, 413);
+      return errorResponse({ error: "রিকোয়েস্ট ডেটা অনেক বড়। / Request body too large." }, 413);
     }
     body = await request.json();
   } catch {
-    return errorResponse({ error: "Invalid request body." }, 400);
+    return errorResponse({ error: "রিকোয়েস্ট সঠিক নয়। / Invalid request body." }, 400);
   }
 
   try {
@@ -55,6 +58,9 @@ export async function POST(request: Request) {
       return errorResponse({ error: error.message, fieldErrors: error.fieldErrors }, error.status);
     }
     console.error("Failed to create order", error);
-    return errorResponse({ error: "Could not place your order. Please try again." }, 500);
+    return errorResponse(
+      { error: "আপনার অর্ডার নেওয়া যায়নি। আবার চেষ্টা করুন। / Could not place your order. Please try again." },
+      500,
+    );
   }
 }

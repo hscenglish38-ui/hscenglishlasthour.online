@@ -5,8 +5,9 @@ import { MAX_ORDER_QUANTITY, MIN_ORDER_QUANTITY, computeTotals, formatCurrency }
 import { validateOrderInput } from "@/lib/orders/validation";
 import type { ApiErrorResponse, CreateOrderResponse, OrderInput } from "@/types/order";
 import { Button } from "@/components/ui/Button";
+import { Bilingual } from "@/components/ui/Bilingual";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { BookIcon, CheckCircleIcon } from "@/components/ui/icons";
+import { BookIcon, CheckCircleIcon, TruckIcon } from "@/components/ui/icons";
 import { OrderSummary } from "./OrderSummary";
 import { useBook } from "@/components/book/BookProvider";
 
@@ -73,7 +74,10 @@ export function OrderForm() {
       if (!response.ok) {
         const errorBody = (await response.json().catch(() => null)) as ApiErrorResponse | null;
         setFieldErrors(errorBody?.fieldErrors ?? {});
-        setServerError(errorBody?.error ?? "Could not place your order. Please try again.");
+        setServerError(
+          errorBody?.error ??
+            "আপনার অর্ডার নেওয়া যায়নি। আবার চেষ্টা করুন। / Could not place your order. Please try again.",
+        );
         setStatus("error");
         return;
       }
@@ -83,7 +87,9 @@ export function OrderForm() {
       setStatus("success");
       setForm(EMPTY_FORM);
     } catch {
-      setServerError("Network error. Please check your connection and try again.");
+      setServerError(
+        "নেটওয়ার্ক সমস্যা। আপনার ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন। / Network error. Please check your connection and try again.",
+      );
       setStatus("error");
     } finally {
       inFlight.current = false;
@@ -93,23 +99,28 @@ export function OrderForm() {
   if (status === "success" && confirmation) {
     return (
       <GlassCard className="order-card animate-rise space-y-4 p-5">
-        <div role="status" className="rounded-[var(--r-md)] border border-emerald-200/80 bg-emerald-50/90 p-4 text-sm text-emerald-900">
+        <div
+          role="status"
+          className="rounded-[var(--r-md)] border border-emerald-200/80 bg-emerald-50/90 p-4 text-sm text-emerald-900 shadow-[var(--box-shadow)]"
+        >
           <p className="flex items-center gap-2 text-base font-bold">
             <CheckCircleIcon className="text-emerald-600" />
-            Order confirmed
+            <Bilingual bn="অর্ডার নিশ্চিত হয়েছে" en="Order Confirmed" />
           </p>
           <p className="mt-1.5">{confirmation.message}</p>
           <p className="mt-2 text-emerald-800">
-            Order ID: <span className="font-mono">{confirmation.orderId}</span>
+            <Bilingual bn="অর্ডার আইডি" en="Order ID" />:{" "}
+            <span className="font-mono">{confirmation.orderId}</span>
           </p>
           <p className="mt-1 text-emerald-800">
-            {confirmation.pricing.quantity} × {formatCurrency(confirmation.pricing.unitPrice)} —
-            total payable on delivery: {formatCurrency(confirmation.pricing.totalAmount)} (Cash on
-            Delivery).
+            {confirmation.pricing.quantity} × {formatCurrency(confirmation.pricing.unitPrice)} —{" "}
+            <Bilingual bn="মোট প্রদেয়" en="Total payable" />:{" "}
+            {formatCurrency(confirmation.pricing.totalAmount)} (
+            <Bilingual bn="ক্যাশ অন ডেলিভারি" en="Cash on Delivery" />).
           </p>
         </div>
         <Button variant="glass" className="w-full" onClick={() => setStatus("idle")}>
-          Place another order
+          <Bilingual bn="আরেকটি অর্ডার করুন" en="Place another order" />
         </Button>
       </GlassCard>
     );
@@ -136,7 +147,7 @@ export function OrderForm() {
         )}
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--ink-muted)]">
-            Order
+            <Bilingual bn="অর্ডার" en="Order" />
           </p>
           <h2 className="truncate text-base font-bold text-[var(--ink)]">
             {book.title || "HSC English Last Hour"}
@@ -161,40 +172,49 @@ export function OrderForm() {
       ) : null}
 
       <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-3.5">
-        <Field
-          id="customerName"
-          label="Full name"
-          error={fieldErrors.customerName}
-          value={form.customerName}
-          onChange={(v) => update("customerName", v)}
-          disabled={submitting}
-          autoComplete="name"
-        />
-        <Field
-          id="customerPhone"
-          label="Mobile number"
-          hint="Bangladeshi mobile number, e.g. 01712345678"
-          error={fieldErrors.customerPhone}
-          value={form.customerPhone}
-          onChange={(v) => update("customerPhone", v)}
-          disabled={submitting}
-          inputMode="tel"
-          autoComplete="tel"
-        />
-        <Field
-          id="customerAddress"
-          label="Delivery address"
-          error={fieldErrors.customerAddress}
-          value={form.customerAddress}
-          onChange={(v) => update("customerAddress", v)}
-          disabled={submitting}
-          multiline
-          autoComplete="street-address"
-        />
+        <section className="info-box space-y-3.5" aria-label="Customer information">
+          <p className="info-box-title">
+            <Bilingual bn="গ্রাহকের তথ্য" en="Customer Information" />
+          </p>
+          <Field
+            id="customerName"
+            labelBn="নাম"
+            labelEn="Name"
+            error={fieldErrors.customerName}
+            value={form.customerName}
+            onChange={(v) => update("customerName", v)}
+            disabled={submitting}
+            autoComplete="name"
+          />
+          <Field
+            id="customerPhone"
+            labelBn="মোবাইল নম্বর"
+            labelEn="Mobile Number"
+            hintBn="বাংলাদেশি মোবাইল নম্বর"
+            hintEn="Bangladeshi mobile number"
+            error={fieldErrors.customerPhone}
+            value={form.customerPhone}
+            onChange={(v) => update("customerPhone", v)}
+            disabled={submitting}
+            inputMode="tel"
+            autoComplete="tel"
+          />
+          <Field
+            id="customerAddress"
+            labelBn="ঠিকানা"
+            labelEn="Address"
+            error={fieldErrors.customerAddress}
+            value={form.customerAddress}
+            onChange={(v) => update("customerAddress", v)}
+            disabled={submitting}
+            multiline
+            autoComplete="street-address"
+          />
+        </section>
 
-        <div>
+        <section className="info-box" aria-label="Book quantity">
           <label htmlFor="quantity" className="field-label">
-            Quantity
+            <Bilingual bn="বইয়ের সংখ্যা" en="Book Quantity" />
           </label>
           <div className="flex items-center gap-3">
             <select
@@ -223,14 +243,27 @@ export function OrderForm() {
             </p>
           ) : (
             <p id="quantity-hint" className="mt-1 text-xs text-[var(--ink-muted)]">
-              Choose 1–20 copies.
+              <Bilingual bn="১–২০ কপি বেছে নিন।" en="Choose 1–20 copies." />
             </p>
           )}
-        </div>
+        </section>
 
-        <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitting}>
-          {submitting ? "Placing order…" : "Order Now (Cash on Delivery)"}
-        </Button>
+        <section className="info-box" aria-label="Order submission">
+          <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitting}>
+            {submitting ? (
+              <Bilingual bn="অর্ডার পাঠানো হচ্ছে…" en="Placing order…" />
+            ) : (
+              <Bilingual bn="অর্ডার করুন" en="Place Order (Cash on Delivery)" />
+            )}
+          </Button>
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-[var(--ink-muted)]">
+            <TruckIcon width={14} height={14} />
+            <Bilingual
+              bn="ক্যাশ অন ডেলিভারি — বই হাতে পেয়ে টাকা দিন।"
+              en="Cash on Delivery — pay when you receive the book."
+            />
+          </p>
+        </section>
       </form>
     </GlassCard>
   );
@@ -238,23 +271,41 @@ export function OrderForm() {
 
 interface FieldProps {
   id: keyof OrderInput;
-  label: string;
+  labelBn: string;
+  labelEn: string;
   value: string;
   onChange: (value: string) => void;
   error?: string;
-  hint?: string;
+  hintBn?: string;
+  hintEn?: string;
   disabled?: boolean;
   multiline?: boolean;
   inputMode?: "tel" | "text";
   autoComplete?: string;
 }
 
-function Field({ id, label, value, onChange, error, hint, disabled, multiline, inputMode, autoComplete }: FieldProps) {
-  const describedBy = [hint ? `${id}-hint` : null, error ? `${id}-error` : null].filter(Boolean).join(" ");
+function Field({
+  id,
+  labelBn,
+  labelEn,
+  value,
+  onChange,
+  error,
+  hintBn,
+  hintEn,
+  disabled,
+  multiline,
+  inputMode,
+  autoComplete,
+}: FieldProps) {
+  const hasHint = Boolean(hintBn && hintEn);
+  const describedBy = [hasHint ? `${id}-hint` : null, error ? `${id}-error` : null]
+    .filter(Boolean)
+    .join(" ");
   return (
     <div>
       <label htmlFor={id} className="field-label">
-        {label}
+        <Bilingual bn={labelBn} en={labelEn} />
       </label>
       {multiline ? (
         <textarea
@@ -284,9 +335,9 @@ function Field({ id, label, value, onChange, error, hint, disabled, multiline, i
           className="field-input"
         />
       )}
-      {hint ? (
+      {hasHint ? (
         <p id={`${id}-hint`} className="mt-1 text-xs text-[var(--ink-muted)]">
-          {hint}
+          <Bilingual bn={hintBn!} en={hintEn!} />
         </p>
       ) : null}
       {error ? (
