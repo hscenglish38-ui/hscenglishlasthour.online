@@ -1,11 +1,24 @@
 import type { BookConfig, BookPage } from "@/types/book";
 
 /**
+ * Hard ceiling on free-preview pages. No configuration (Admin value or local
+ * default) may expose more than this many pages publicly, and the secure
+ * preview PDF is only ever generated with up to this many pages.
+ */
+export const MAX_PREVIEW_PAGE_COUNT = 10;
+
+/**
  * Default number of free-preview pages when the Admin has not configured one.
  * The reader never shows more than this, and the "free preview ended" prompt
  * appears once the reader reaches the limit.
  */
-export const DEFAULT_PREVIEW_PAGE_COUNT = 4;
+export const DEFAULT_PREVIEW_PAGE_COUNT = MAX_PREVIEW_PAGE_COUNT;
+
+/** Clamp any configured preview count to the safe range `[0, MAX]`. */
+export function clampPreviewPageCount(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_PREVIEW_PAGE_COUNT;
+  return Math.max(0, Math.min(Math.floor(value), MAX_PREVIEW_PAGE_COUNT));
+}
 
 /**
  * Real book configuration for hscenglishlasthour.
@@ -117,9 +130,12 @@ export function getActiveBookConfig(config: BookConfig = realBookConfig): BookCo
   };
 }
 
-/** Pages that are publicly readable. */
+/** Pages that are publicly readable, never more than the hard preview ceiling. */
 export function getPreviewPages(config: BookConfig = getActiveBookConfig()): BookPage[] {
-  const limit = Math.max(0, Math.min(config.previewPageCount, config.content.pages.length));
+  const limit = Math.min(
+    clampPreviewPageCount(config.previewPageCount),
+    config.content.pages.length,
+  );
   return config.content.pages.slice(0, limit);
 }
 

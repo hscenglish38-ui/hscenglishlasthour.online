@@ -6,11 +6,20 @@ export interface OrderInput {
   customerName: string;
   customerPhone: string;
   customerAddress: string;
+  /** Number of books ordered, an integer from 1 to 20. */
+  quantity: number;
 }
 
 export interface OrderPricing {
-  bookPrice: number;
+  /** Unit price charged per book (offer price when set). */
+  unitPrice: number;
+  /** Number of books ordered. */
+  quantity: number;
+  /** `unitPrice * quantity`. */
+  subtotal: number;
+  /** Delivery charge applied once per order. */
   deliveryCharge: number;
+  /** `subtotal + deliveryCharge`. */
   totalAmount: number;
 }
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { OrderInput } from "@/types/order";
+import { MAX_ORDER_QUANTITY, MIN_ORDER_QUANTITY } from "./pricing";
 
 export interface ValidationResult {
   success: boolean;
@@ -38,6 +39,41 @@ export function normalizeBdPhone(raw: string): string | null {
   return `+880${local.slice(1)}`;
 }
 
+/**
+ * Parse and validate an order quantity. Accepts an integer from 1 to 20
+ * (a number, or a string that represents a whole number). Missing/empty values
+ * default to 1. Rejects zero, negatives, decimals, non-numeric strings and any
+ * value above 20.
+ */
+export function parseQuantity(
+  value: unknown,
+): { ok: true; value: number } | { ok: false; message: string } {
+  if (value === undefined || value === null || value === "") {
+    return { ok: true, value: MIN_ORDER_QUANTITY };
+  }
+
+  const num =
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && value.trim() !== ""
+        ? Number(value)
+        : Number.NaN;
+
+  if (!Number.isFinite(num) || !Number.isInteger(num)) {
+    return {
+      ok: false,
+      message: `Enter a whole-number quantity between ${MIN_ORDER_QUANTITY} and ${MAX_ORDER_QUANTITY}.`,
+    };
+  }
+  if (num < MIN_ORDER_QUANTITY || num > MAX_ORDER_QUANTITY) {
+    return {
+      ok: false,
+      message: `Quantity must be between ${MIN_ORDER_QUANTITY} and ${MAX_ORDER_QUANTITY}.`,
+    };
+  }
+  return { ok: true, value: num };
+}
+
 export function validateOrderInput(input: unknown): ValidationResult {
   const parsed = schema.safeParse(input);
   if (!parsed.success) {
@@ -59,6 +95,11 @@ export function validateOrderInput(input: unknown): ValidationResult {
     };
   }
 
+  const quantity = parseQuantity((input as { quantity?: unknown } | null)?.quantity);
+  if (!quantity.ok) {
+    return { success: false, fieldErrors: { quantity: quantity.message } };
+  }
+
   return {
     success: true,
     fieldErrors: {},
@@ -66,6 +107,7 @@ export function validateOrderInput(input: unknown): ValidationResult {
       customerName: parsed.data.customerName,
       customerPhone: phone,
       customerAddress: parsed.data.customerAddress,
+      quantity: quantity.value,
     },
   };
 }

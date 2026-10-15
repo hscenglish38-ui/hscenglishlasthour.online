@@ -186,6 +186,7 @@ export type Database = {
           delivery_charge: number
           id: string
           payment_method: string
+          quantity: number
           status: string
           total_amount: number
           updated_at: string
@@ -202,6 +203,7 @@ export type Database = {
           delivery_charge: number
           id?: string
           payment_method?: string
+          quantity?: number
           status?: string
           total_amount: number
           updated_at?: string
@@ -218,6 +220,7 @@ export type Database = {
           delivery_charge?: number
           id?: string
           payment_method?: string
+          quantity?: number
           status?: string
           total_amount?: number
           updated_at?: string

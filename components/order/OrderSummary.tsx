@@ -4,11 +4,22 @@ import type { OrderPricing } from "@/types/order";
 
 export function OrderSummary({ pricing }: { pricing: OrderPricing }) {
   return (
-    <div>
-      <dl className="divide-y divide-white/50 text-sm">
+    <div className="order-summary rounded-[var(--r-md)] border border-[var(--glass-border-soft)] bg-white/55 p-3">
+      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--ink-muted)]">
+        Order summary
+      </p>
+      <dl className="divide-y divide-white/60 text-sm">
         <div className="flex items-center justify-between py-1.5">
-          <dt className="text-[var(--ink-soft)]">Book price</dt>
-          <dd className="font-medium text-[var(--ink)]">{formatCurrency(pricing.bookPrice)}</dd>
+          <dt className="text-[var(--ink-soft)]">Book price (each)</dt>
+          <dd className="font-medium text-[var(--ink)]">{formatCurrency(pricing.unitPrice)}</dd>
+        </div>
+        <div className="flex items-center justify-between py-1.5">
+          <dt className="text-[var(--ink-soft)]">Quantity</dt>
+          <dd className="font-medium text-[var(--ink)]">× {pricing.quantity}</dd>
+        </div>
+        <div className="flex items-center justify-between py-1.5">
+          <dt className="text-[var(--ink-soft)]">Subtotal</dt>
+          <dd className="font-medium text-[var(--ink)]">{formatCurrency(pricing.subtotal)}</dd>
         </div>
         <div className="flex items-center justify-between py-1.5">
           <dt className="text-[var(--ink-soft)]">Delivery charge</dt>

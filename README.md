@@ -37,7 +37,7 @@ Then push the schema: `npm run supabase:link` then `npm run supabase:db:push` (m
 npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-All green (50 tests). Dev server verified at http://localhost:3000.
+All green (108 tests). Dev server verified at http://localhost:3000.
 
 ## Docs
 See `CURRENT_STATUS.md`, `ARCHITECTURE.md`, `SECURITY.md`, `DATABASE_SCHEMA.md`, `REQUIREMENTS.md`, `IMPLEMENTATION_PLAN.md`, `CHANGELOG.md`, `PROJECT_MEMORY.md`, `AGENTS.md`.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeBdPhone, validateOrderInput } from "./validation";
+import { normalizeBdPhone, parseQuantity, validateOrderInput } from "./validation";
 
 describe("normalizeBdPhone", () => {
   it("accepts local, with country code and spaced formats", () => {
@@ -30,6 +30,26 @@ describe("validateOrderInput", () => {
     expect(result.success).toBe(true);
     expect(result.data?.customerPhone).toBe("+8801712345678");
     expect(result.data?.customerName).toBe("Ayesha Rahman");
+    expect(result.data?.quantity).toBe(1);
+  });
+
+  it("accepts quantities 2 and 4", () => {
+    expect(validateOrderInput({ ...valid, quantity: 2 }).data?.quantity).toBe(2);
+    expect(validateOrderInput({ ...valid, quantity: 4 }).data?.quantity).toBe(4);
+  });
+
+  it("accepts the maximum quantity of 20", () => {
+    const result = validateOrderInput({ ...valid, quantity: 20 });
+    expect(result.success).toBe(true);
+    expect(result.data?.quantity).toBe(20);
+  });
+
+  it("rejects invalid quantities", () => {
+    for (const quantity of [0, -1, 21, 2.5, "abc", "3.5"]) {
+      const result = validateOrderInput({ ...valid, quantity });
+      expect(result.success).toBe(false);
+      expect(result.fieldErrors.quantity).toBeTruthy();
+    }
   });
 
   it("trims whitespace", () => {
@@ -53,5 +73,25 @@ describe("validateOrderInput", () => {
   it("rejects non-object input", () => {
     expect(validateOrderInput(null).success).toBe(false);
     expect(validateOrderInput("nope").success).toBe(false);
+  });
+});
+
+describe("parseQuantity", () => {
+  it("defaults missing/empty values to 1", () => {
+    expect(parseQuantity(undefined)).toEqual({ ok: true, value: 1 });
+    expect(parseQuantity(null)).toEqual({ ok: true, value: 1 });
+    expect(parseQuantity("")).toEqual({ ok: true, value: 1 });
+  });
+
+  it("accepts integers and numeric strings from 1 to 20", () => {
+    expect(parseQuantity(1)).toEqual({ ok: true, value: 1 });
+    expect(parseQuantity("2")).toEqual({ ok: true, value: 2 });
+    expect(parseQuantity(20)).toEqual({ ok: true, value: 20 });
+  });
+
+  it("rejects zero, negatives, decimals, non-numeric strings and >20", () => {
+    for (const value of [0, -1, 2.5, 21, "abc", "3.5", NaN, Infinity, {}]) {
+      expect(parseQuantity(value).ok).toBe(false);
+    }
   });
 });

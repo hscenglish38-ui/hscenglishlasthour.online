@@ -53,24 +53,65 @@ describe("createOrder", () => {
   it("persists a valid order and returns the server-computed totals", async () => {
     const result = await createOrder(validInput);
     expect(result.orderId).toBe("order-123");
-    expect(result.pricing.totalAmount).toBe(result.pricing.bookPrice + result.pricing.deliveryCharge);
+    expect(result.pricing.totalAmount).toBe(
+      result.pricing.subtotal + result.pricing.deliveryCharge,
+    );
+    expect(result.pricing.quantity).toBe(1);
     expect(inserts).toHaveLength(1);
     const record = inserts[0];
+    expect(record.quantity).toBe(1);
     expect(record.payment_method).toBe("cod");
     expect(record.status).toBe("pending");
     expect(record.customer_phone).toBe("+8801712345678");
   });
 
+  it("persists the selected quantity and computes the total from it", async () => {
+    const result = await createOrder({ ...validInput, quantity: 4 });
+    expect(result.pricing).toEqual({
+      unitPrice: 350,
+      quantity: 4,
+      subtotal: 1400,
+      deliveryCharge: 60,
+      totalAmount: 1460,
+    });
+    const record = inserts[0];
+    expect(record.quantity).toBe(4);
+    expect(record.book_price).toBe(350);
+    expect(record.total_amount).toBe(1460);
+  });
+
+  it("accepts the maximum quantity of 20", async () => {
+    const result = await createOrder({ ...validInput, quantity: 20 });
+    expect(result.pricing.quantity).toBe(20);
+    expect(result.pricing.subtotal).toBe(7000);
+    expect(result.pricing.totalAmount).toBe(7060);
+  });
+
+  it("rejects an invalid quantity with a 400", async () => {
+    for (const quantity of [0, -1, 21, 2.5, "abc"]) {
+      await expect(createOrder({ ...validInput, quantity })).rejects.toMatchObject({
+        name: "OrderError",
+        status: 400,
+      });
+    }
+    expect(inserts).toHaveLength(0);
+  });
+
   it("ignores any client-supplied pricing fields", async () => {
     await createOrder({
       ...validInput,
+      quantity: 2,
       bookPrice: 1,
+      unitPrice: 1,
+      subtotal: 1,
       totalAmount: 1,
       paymentMethod: "card",
       status: "paid",
     });
     const record = inserts[0];
     expect(record.book_price).toBe(350);
+    expect(record.quantity).toBe(2);
+    expect(record.total_amount).toBe(760);
     expect(record.payment_method).toBe("cod");
     expect(record.status).toBe("pending");
   });
@@ -83,7 +124,13 @@ describe("createOrder", () => {
 
     const result = await createOrder(validInput);
 
-    expect(result.pricing).toEqual({ bookPrice: 400, deliveryCharge: 80, totalAmount: 480 });
+    expect(result.pricing).toEqual({
+      unitPrice: 400,
+      quantity: 1,
+      subtotal: 400,
+      deliveryCharge: 80,
+      totalAmount: 480,
+    });
     const record = inserts[0];
     expect(record.book_price).toBe(400);
     expect(record.total_amount).toBe(480);

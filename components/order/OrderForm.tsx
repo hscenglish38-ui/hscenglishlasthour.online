@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { computeTotals } from "@/lib/orders/pricing";
+import { MAX_ORDER_QUANTITY, MIN_ORDER_QUANTITY, computeTotals, formatCurrency } from "@/lib/orders/pricing";
 import { validateOrderInput } from "@/lib/orders/validation";
 import type { ApiErrorResponse, CreateOrderResponse, OrderInput } from "@/types/order";
 import { Button } from "@/components/ui/Button";
@@ -12,11 +12,20 @@ import { useBook } from "@/components/book/BookProvider";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-const EMPTY_FORM: OrderInput = { customerName: "", customerPhone: "", customerAddress: "" };
+const EMPTY_FORM: OrderInput = {
+  customerName: "",
+  customerPhone: "",
+  customerAddress: "",
+  quantity: MIN_ORDER_QUANTITY,
+};
+
+const QUANTITY_OPTIONS = Array.from(
+  { length: MAX_ORDER_QUANTITY - MIN_ORDER_QUANTITY + 1 },
+  (_, index) => MIN_ORDER_QUANTITY + index,
+);
 
 export function OrderForm() {
   const { book } = useBook();
-  const pricing = computeTotals(book.pricing);
   const [form, setForm] = useState<OrderInput>(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -24,9 +33,10 @@ export function OrderForm() {
   const [confirmation, setConfirmation] = useState<CreateOrderResponse | null>(null);
   const inFlight = useRef(false);
 
+  const pricing = computeTotals(book.pricing, form.quantity);
   const submitting = status === "submitting";
 
-  function update<K extends keyof OrderInput>(key: K, value: string) {
+  function update<K extends keyof OrderInput>(key: K, value: OrderInput[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (fieldErrors[key]) {
       setFieldErrors((prev) => {
@@ -93,7 +103,9 @@ export function OrderForm() {
             Order ID: <span className="font-mono">{confirmation.orderId}</span>
           </p>
           <p className="mt-1 text-emerald-800">
-            Total payable on delivery: {confirmation.pricing.totalAmount} BDT (Cash on Delivery).
+            {confirmation.pricing.quantity} × {formatCurrency(confirmation.pricing.unitPrice)} —
+            total payable on delivery: {formatCurrency(confirmation.pricing.totalAmount)} (Cash on
+            Delivery).
           </p>
         </div>
         <Button variant="glass" className="w-full" onClick={() => setStatus("idle")}>
@@ -179,6 +191,42 @@ export function OrderForm() {
           multiline
           autoComplete="street-address"
         />
+
+        <div>
+          <label htmlFor="quantity" className="field-label">
+            Quantity
+          </label>
+          <div className="flex items-center gap-3">
+            <select
+              id="quantity"
+              name="quantity"
+              value={form.quantity}
+              disabled={submitting}
+              aria-invalid={Boolean(fieldErrors.quantity)}
+              aria-describedby={fieldErrors.quantity ? "quantity-error" : "quantity-hint"}
+              onChange={(e) => update("quantity", Number(e.target.value))}
+              className="field-input w-24"
+            >
+              {QUANTITY_OPTIONS.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+            <span className="text-sm text-[var(--ink-soft)]" aria-hidden="true">
+              {form.quantity} {form.quantity === 1 ? "copy" : "copies"}
+            </span>
+          </div>
+          {fieldErrors.quantity ? (
+            <p id="quantity-error" className="mt-1 text-xs font-medium text-red-600">
+              {fieldErrors.quantity}
+            </p>
+          ) : (
+            <p id="quantity-hint" className="mt-1 text-xs text-[var(--ink-muted)]">
+              Choose 1–20 copies.
+            </p>
+          )}
+        </div>
 
         <Button type="submit" variant="primary" size="lg" className="w-full" disabled={submitting}>
           {submitting ? "Placing order…" : "Order Now (Cash on Delivery)"}

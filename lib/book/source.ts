@@ -4,7 +4,7 @@ import type { BookContentMode, BookConfig, BookPage, ReadingMode } from "@/types
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseAdminConfigured } from "@/lib/supabase/config";
 import { createSignedUrls } from "@/lib/supabase/storage";
-import { getActiveBookConfig, getPreviewPages, realBookConfig } from "./config";
+import { clampPreviewPageCount, getActiveBookConfig, getPreviewPages, realBookConfig } from "./config";
 
 export const BOOKS_TABLE = "books";
 export const BOOK_PAGES_TABLE = "book_pages";
@@ -116,7 +116,9 @@ export function mapBookRow(book: Row, pageRows: Row[], options: MapBookOptions =
     },
     // Fail closed: a DB row without an explicit flag is treated as unpublished.
     isPublished: asBoolean(book.is_published, false),
-    previewPageCount: previewPageCount ?? (pages.length > 0 ? pages.length : base.previewPageCount),
+    previewPageCount: clampPreviewPageCount(
+      previewPageCount ?? (pages.length > 0 ? pages.length : base.previewPageCount),
+    ),
     updatedAt: updatedAt ?? undefined,
   };
 

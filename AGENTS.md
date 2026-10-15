@@ -40,6 +40,15 @@ Next.js 16.4.0 (App Router, Turbopack), React 19.3, Tailwind v4, TypeScript stri
 - Server-authoritative pricing; never fake success. Check `isPublished`.
 - No Admin/auth/cart/multi-product/payment gateway in Phase 1.
 - Only reader + minimal controls + return-to-order + order form+summary.
+- Free preview is capped at `MAX_PREVIEW_PAGE_COUNT` (10) in `lib/book/config.ts`; order `quantity` is 1–20, validated server-side in `lib/orders/validation.ts`.
+
+## Git workflow (safe)
+This repo is pushed to GitHub over HTTPS (`origin`). Never store the token in the repo, git config, remotes, argv, or logs — use the macOS Keychain (`credential.helper=osxkeychain`).
+- Before committing: run `git status`, `git diff`, and review `git log --oneline -10`; stage only intended files. Never commit secrets.
+- Keep history linear and non-destructive: commit, then `git pull --rebase` (or a merge for unrelated histories via `git merge --allow-unrelated-histories`). **Never** `push --force`, never hard-reset shared branches, never overwrite remote history.
+- Run the quality gates (`npm run lint`, `npm run typecheck`, `npm test`, `npm run build`) before pushing.
+- Verify the push with `git ls-remote origin refs/heads/main` (compare to `git rev-parse HEAD`) before claiming success.
+- If Supabase migrations drift (remote has versions missing locally), reconcile with `supabase migration repair --status reverted <versions>` (history only; it does not change schema/data), then `db push`.
 
 ## Docs
 See `CURRENT_STATUS.md`, `ARCHITECTURE.md`, `REQUIREMENTS.md`, `SECURITY.md`, `DATABASE_SCHEMA.md`, `IMPLEMENTATION_PLAN.md`, `CHANGELOG.md`, `PROJECT_MEMORY.md`.

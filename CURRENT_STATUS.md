@@ -6,10 +6,11 @@
 
 - Premium crystal-glass/glassmorphism landing page with book preview + order.
 - Colorful 3D crystal-glass redesign: layered animated background orbs, frosted glass panels, gradient primary CTAs. Desktop layout = large reader on the left + compact sticky order sidebar on the right; mobile/tablet = reader first with the order form stacked below. Verified at 320–1920 px with zero horizontal overflow and no clipped controls.
-- Default free-preview count is 4 pages (`DEFAULT_PREVIEW_PAGE_COUNT` in `lib/book/config.ts`); the reader clamps to it and shows the Bangla "preview finished — order now" prompt at the limit.
-- Two reader formats: page-flip (Book Mode) with realistic dual-page spread on desktop, single page on mobile; PDF (PDF Mode). Zoom (in/out/reset/fit-width/fit-page), pinch-zoom, keyboard/swipe navigation, progress.
-- Order form (name, BD phone, address) with client + server validation.
-- Server-authoritative pricing and Supabase-backed order endpoint (`orders` table, service-role client).
+- Free-preview ceiling is 10 pages (`MAX_PREVIEW_PAGE_COUNT`/`DEFAULT_PREVIEW_PAGE_COUNT` in `lib/book/config.ts`); configured counts are clamped to it and the reader shows the Bangla "preview finished — order now" prompt at the limit. The cached preview PDF carries an `hsc-preview-limit:<n>` marker so `GET /api/book/preview-pdf` re-caches when the limit changes and never serves more pages than allowed.
+- Two reader formats: page-flip (Book Mode) with realistic dual-page spread on desktop, single page on mobile; PDF (PDF Mode). Zoom (in/out/reset/fit-width/fit-page), pinch-zoom, keyboard/swipe navigation, progress. End-of-preview detection lives in `lastVisiblePage()`/`isPreviewEnd()`.
+- Order form (name, BD phone, address, quantity 1–20) with client + server validation; the server recomputes unit price × quantity + delivery.
+- Server-authoritative pricing and Supabase-backed order endpoint (`orders` table with `quantity`, service-role client).
+- Info cards and the order summary use clearer borders/shadows (`--shadow-card*`/`--glass-outline*`, `.order-card`/`.order-summary`).
 - Content-loading architecture: real config + dev preview fixtures gated to development; graceful "preview coming soon" state when no content.
 - Server-side Supabase book loading: `loadPublishedBook(bookId?)` reads the `books` row + `book_pages` when Supabase is configured, maps them with signed asset URLs, and falls back to the local config otherwise (never throws). Content is stripped when unpublished.
 - Supabase backend: RLS migrations (`supabase/migrations/`), private `book-assets` bucket, realtime publication on `books`/`book_pages`, `BookProvider` live-refresh context, `GET /api/book` (published config) and `GET /api/book/preview-pdf` (trimmed preview PDF, full PDF never exposed).
@@ -23,7 +24,7 @@
 | `npm install`            | Succeeds; `postinstall` copies pdf.js assets.      |
 | `npm run lint`           | Clean (exit 0).                                    |
 | `npm run typecheck`      | Clean (exit 0).                                    |
-| `npm test`               | 50 passing (Vitest, 8 files).                      |
+| `npm test`               | 108 passing (Vitest, 12 files).                    |
 | `npm run build`          | Success. `/` dynamic (`instant = false`), `/api/book`, `/api/book/preview-pdf`, `/api/orders` dynamic. |
 
 Dev server: **http://localhost:3000** verified GET / → 200; reader renders an open-book spread (desktop) / single page (mobile) via a real headless-browser DOM check; production shows the graceful "preview coming soon" state; preview assets served; no sample/dev fixture labels in public UI. Redesign verified at 320/360/375/390/414/430/768/1024/1280/1440/1600/1920 px via a temporary same-origin measurement harness (since removed): 0 px page overflow, 0 clipped controls, reader+order side-by-side from 1024 px with the reader at ~68–74% width, and order stacked below the reader on all smaller viewports.

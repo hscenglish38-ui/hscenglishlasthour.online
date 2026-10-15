@@ -46,7 +46,7 @@ export async function createOrder(input: unknown): Promise<CreateOrderResponse> 
     );
   }
 
-  const pricing = computeTotals(book.pricing);
+  const pricing = computeTotals(book.pricing, validation.data.quantity);
   const now = new Date().toISOString();
 
   const record = {
@@ -55,7 +55,8 @@ export async function createOrder(input: unknown): Promise<CreateOrderResponse> 
     customer_name: validation.data.customerName,
     customer_phone: validation.data.customerPhone,
     customer_address: validation.data.customerAddress,
-    book_price: pricing.bookPrice,
+    quantity: pricing.quantity,
+    book_price: pricing.unitPrice,
     delivery_charge: pricing.deliveryCharge,
     total_amount: pricing.totalAmount,
     currency: book.pricing.currency,

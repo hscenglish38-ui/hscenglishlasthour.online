@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useBook } from "@/components/book/BookProvider";
-import { clampPage, isFirstPage, nextPage, prevPage } from "@/lib/reader/navigation";
+import { clampPage, isFirstPage, isPreviewEnd, nextPage, prevPage } from "@/lib/reader/navigation";
 import {
   clampZoom,
   computePageSize,
@@ -220,9 +220,7 @@ export function BookReader({ orderSectionId = "order" }: { orderSectionId?: stri
 
   // In a two-page spread the flip reader reports the left page, so the spread
   // reaches the end when its right page does. Otherwise the end is the last page.
-  const lastVisiblePage =
-    activeMode === "flip" && spread ? Math.min(page + 1, totalPages) : page;
-  const atEnd = lastVisiblePage >= totalPages;
+  const atEnd = isPreviewEnd(page, totalPages, { spread });
   const ready = size.width > 0;
   const showModes = flipAvailable && pdfAvailable;
 

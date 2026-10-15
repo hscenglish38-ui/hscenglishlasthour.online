@@ -1,6 +1,8 @@
 # Database Schema (Supabase / Postgres)
 
-Migrations live in `supabase/migrations/` (`20251015000000_init.sql`, `20251015000001_rls_storage.sql`).
+Migrations live in `supabase/migrations/` (`20251015000000_init.sql`, `20251015000001_rls_storage.sql`,
+`20261014224523_security_hardening_preview_access.sql`, `20261014224544_restrict_anonymous_catalog_privileges.sql`,
+`20261014224600_revoke_public_sensitive_table_grants.sql`, `20261015120000_add_orders_quantity.sql`).
 Seed data (optional, commented) in `supabase/seed.sql`.
 
 ## Table: `books`
@@ -21,7 +23,7 @@ Read on the server by `lib/book/source.ts` (`loadPublishedBook`) via the service
 | offer_price | numeric(10,2) | When set, the charged amount |
 | delivery_charge | numeric(10,2) | Integer BDT |
 | currency | text | `BDT` |
-| preview_page_count | integer | Signed preview pages, default 4 |
+| preview_page_count | integer | Free preview pages. App ceiling `MAX_PREVIEW_PAGE_COUNT = 10`; DB default 4, live row set to 10 |
 | default_mode | text | `flip` \| `pdf` |
 | page_aspect_ratio | numeric(8,4) | Default 1.4 |
 | flip_enabled | boolean | Default true |
@@ -53,7 +55,8 @@ COD orders. Written only by the server (`createOrder`) via the service-role clie
 | book_id | text FK → books(id) | `on delete restrict` |
 | book_title | text | Snapshot at order time |
 | customer_name / customer_phone / customer_address | text | Trimmed; phone E.164 `+8801XXXXXXXXX` |
-| book_price / delivery_charge / total_amount | numeric(10,2) | Integer BDT (server-authoritative) |
+| quantity | integer | Copies ordered, `check (quantity between 1 and 20)`, default `1` (added `20261015120000`) |
+| book_price / delivery_charge / total_amount | numeric(10,2) | Integer BDT (server-authoritative). `book_price` is the unit price; `total_amount = book_price * quantity + delivery_charge` |
 | currency | text | `BDT` |
 | payment_method | text | `cod` only |
 | status | text | `pending` (then confirmed/packed/shipped/delivered/cancelled) |

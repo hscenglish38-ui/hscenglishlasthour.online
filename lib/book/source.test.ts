@@ -88,6 +88,11 @@ describe("mapBookRow", () => {
     expect(config.previewPageCount).toBe(DEFAULT_PREVIEW_PAGE_COUNT);
   });
 
+  it("clamps an oversized preview_page_count to the ceiling", () => {
+    const config = mapBookRow({ id: "hscenglishlasthour", title: "t", preview_page_count: 50 }, []);
+    expect(config.previewPageCount).toBe(10);
+  });
+
   it("ignores malformed pages and non-BDT currency values", () => {
     const config = mapBookRow(
       {

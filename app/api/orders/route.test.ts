@@ -22,6 +22,15 @@ const VALID_BODY = {
   customerName: "Ayesha Rahman",
   customerPhone: "+8801712345678",
   customerAddress: "House 12, Road 5, Dhanmondi",
+  quantity: 1,
+};
+
+const PRICING = {
+  unitPrice: 350,
+  quantity: 1,
+  subtotal: 350,
+  deliveryCharge: 60,
+  totalAmount: 410,
 };
 
 function postRequest(body: unknown, ip: string) {
@@ -41,7 +50,7 @@ describe("POST /api/orders", () => {
     createOrder.mockResolvedValue({
       orderId: "abc123",
       book: { id: "sample-book-001", title: "Sample Book" },
-      pricing: { bookPrice: 350, deliveryCharge: 60, totalAmount: 410 },
+      pricing: PRICING,
       message: "Your order has been received.",
     });
 
@@ -55,7 +64,7 @@ describe("POST /api/orders", () => {
     createOrder.mockResolvedValue({
       orderId: "abc123",
       book: { id: "sample-book-001", title: "Sample Book" },
-      pricing: { bookPrice: 350, deliveryCharge: 60, totalAmount: 410 },
+      pricing: PRICING,
       message: "ok",
     });
 
@@ -107,7 +116,7 @@ describe("POST /api/orders", () => {
     createOrder.mockResolvedValue({
       orderId: "abc123",
       book: { id: "sample-book-001", title: "Sample Book" },
-      pricing: { bookPrice: 350, deliveryCharge: 60, totalAmount: 410 },
+      pricing: PRICING,
       message: "ok",
     });
 

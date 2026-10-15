@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { clampPage, isFirstPage, isLastPage, nextPage, prevPage } from "./navigation";
+import {
+  clampPage,
+  isFirstPage,
+  isLastPage,
+  isPreviewEnd,
+  lastVisiblePage,
+  nextPage,
+  prevPage,
+} from "./navigation";
 
 describe("navigation", () => {
   it("clamps page into range", () => {
@@ -22,5 +30,25 @@ describe("navigation", () => {
     expect(isFirstPage(2)).toBe(false);
     expect(isLastPage(8, 8)).toBe(true);
     expect(isLastPage(7, 8)).toBe(false);
+  });
+});
+
+describe("preview end detection", () => {
+  it("single-page mode ends on the last page", () => {
+    expect(lastVisiblePage(9, 10, { spread: false })).toBe(9);
+    expect(isPreviewEnd(10, 10, { spread: false })).toBe(true);
+    expect(isPreviewEnd(9, 10, { spread: false })).toBe(false);
+  });
+
+  it("two-page spread ends one page early (right page included)", () => {
+    expect(lastVisiblePage(9, 10, { spread: true })).toBe(10);
+    expect(isPreviewEnd(9, 10, { spread: true })).toBe(true);
+    expect(isPreviewEnd(8, 10, { spread: true })).toBe(false);
+  });
+
+  it("handles an odd final page in spread mode", () => {
+    expect(lastVisiblePage(7, 7, { spread: true })).toBe(7);
+    expect(isPreviewEnd(7, 7, { spread: true })).toBe(true);
+    expect(isPreviewEnd(6, 7, { spread: true })).toBe(true);
   });
 });

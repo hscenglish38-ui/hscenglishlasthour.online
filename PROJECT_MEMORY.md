@@ -28,12 +28,12 @@ Phase 1 of `hscenglishlasthour`: crystal-glass, mobile-first single-book store. 
 - Title/brand: `HSC English Last Hour`
 
 ## State
-- Lint/typecheck/test/build clean (50 tests).
+- Lint/typecheck/test/build clean (108 tests, 12 files).
 - Dev server: http://localhost:3000 verified; reader spread confirmed via headless-browser DOM check.
 - Supabase backend implemented: `loadPublishedBook` (`lib/book/source.ts`), `orders` insert (`lib/orders/create-order.ts`), migrations/RLS/storage, realtime `BookProvider`, `/api/book` + `/api/book/preview-pdf`. Falls back to local config when unconfigured.
-- Supabase reads/writes not tested against a live project (503 when unconfigured; migrations not yet applied remotely).
+- Live Supabase connected (project ref `qrkzygdvckuirqmmdxcj`): migrations applied (including `20261015120000_add_orders_quantity.sql`), RLS + private `book-assets` bucket, signed assets, realtime, and real order inserts verified. Free preview ceiling is 10 pages (`MAX_PREVIEW_PAGE_COUNT`); orders carry a `quantity` (1–20).
+- Reader: page-flip spread (desktop) / single page (mobile) + PDF mode; end-of-preview detection in `lastVisiblePage()`/`isPreviewEnd()`.
 
 ## Next
-- Provide Supabase credentials, run `supabase:link` + `supabase:db:push`, and confirm a live order, signed assets, and realtime.
-- Add real book content (PDF/pages) to the `book-assets` bucket.
+- Add more real book content (PDF/pages) to the `book-assets` bucket as needed.
 - Phase 2: Admin Panel.

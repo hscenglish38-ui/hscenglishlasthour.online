@@ -34,10 +34,54 @@ afterEach(() => {
 describe("OrderForm", () => {
   it("shows the price breakdown and an Order Now button", () => {
     renderForm();
-    expect(screen.getByText("Book price")).toBeInTheDocument();
+    expect(screen.getByText("Book price (each)")).toBeInTheDocument();
+    expect(screen.getByText("Quantity", { selector: "dt" })).toBeInTheDocument();
+    expect(screen.getByText("Subtotal")).toBeInTheDocument();
     expect(screen.getByText("Delivery charge")).toBeInTheDocument();
     expect(screen.getByText("Total payable")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /order now/i })).toBeInTheDocument();
+  });
+
+  it("defaults the quantity to 1 and recalculates the total when changed", async () => {
+    renderForm();
+    const quantity = screen.getByLabelText("Quantity");
+    expect(quantity).toHaveValue("1");
+    expect(screen.getByText("৳410")).toBeInTheDocument();
+
+    await userEvent.selectOptions(quantity, "4");
+
+    expect(screen.getByText("৳1,460")).toBeInTheDocument();
+    expect(screen.getByText("৳1,400")).toBeInTheDocument();
+  });
+
+  it("sends the selected quantity to the server", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse(
+        {
+          orderId: "abc123",
+          book: { id: "hscenglishlasthour", title: "HSC English Last Hour" },
+          pricing: {
+            unitPrice: 350,
+            quantity: 2,
+            subtotal: 700,
+            deliveryCharge: 60,
+            totalAmount: 760,
+          },
+          message: "Your order has been received.",
+        },
+        201,
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    renderForm();
+
+    await userEvent.selectOptions(screen.getByLabelText("Quantity"), "2");
+    await fillValidForm();
+    await userEvent.click(screen.getByRole("button", { name: /order now/i }));
+
+    expect(await screen.findByText(/order confirmed/i)).toBeInTheDocument();
+    const [, options] = fetchMock.mock.calls[0];
+    expect(JSON.parse(options.body).quantity).toBe(2);
   });
 
   it("validates required fields before submitting", async () => {
@@ -59,7 +103,7 @@ describe("OrderForm", () => {
         {
           orderId: "abc123",
           book: { id: "sample-book-001", title: "Sample Book" },
-          pricing: { bookPrice: 350, deliveryCharge: 60, totalAmount: 410 },
+          pricing: { unitPrice: 350, quantity: 1, subtotal: 350, deliveryCharge: 60, totalAmount: 410 },
           message: "Your order has been received.",
         },
         201,
@@ -81,6 +125,7 @@ describe("OrderForm", () => {
       customerName: "Ayesha Rahman",
       customerPhone: "+8801712345678",
       customerAddress: "House 12, Road 5, Dhanmondi",
+      quantity: 1,
     });
   });
 
@@ -125,7 +170,7 @@ describe("OrderForm", () => {
         {
           orderId: "abc123",
           book: { id: "sample-book-001", title: "Sample Book" },
-          pricing: { bookPrice: 350, deliveryCharge: 60, totalAmount: 410 },
+          pricing: { unitPrice: 350, quantity: 1, subtotal: 350, deliveryCharge: 60, totalAmount: 410 },
           message: "Your order has been received.",
         },
         201,

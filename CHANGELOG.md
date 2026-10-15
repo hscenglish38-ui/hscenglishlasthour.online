@@ -2,6 +2,25 @@
 
 Format loosely follows Keep a Changelog. Dates are ISO.
 
+## [1.5.0] — 2026-10-15
+
+Expanded the free preview, added order quantity, and clarified card styling.
+
+### Added
+- Free preview ceiling raised to 10 pages: `MAX_PREVIEW_PAGE_COUNT = 10` and `DEFAULT_PREVIEW_PAGE_COUNT = 10` in `lib/book/config.ts`, plus `clampPreviewPageCount()`. `getPreviewPages()`/`mapBookRow()` clamp configured counts to 10.
+- Preview cache self-healing: `lib/book/preview-pdf.ts` stamps the generated preview with a `hsc-preview-limit:<n>` PDF Subject marker and adds `readPreviewPdfInfo()`. `GET /api/book/preview-pdf` regenerates and re-caches whenever the marker is missing or stale, and never serves more pages than the current limit (stale/oversized caches are replaced; no page-range parameter is accepted).
+- Order quantity 1–20: `components/order/OrderForm.tsx` quantity selector, quantity-aware `OrderSummary`, and `orders.quantity` column (`supabase/migrations/20261015120000_add_orders_quantity.sql` — additive, `default 1`, `check (quantity between 1 and 20)`).
+
+### Changed
+- `OrderPricing` is now `{ unitPrice, quantity, subtotal, deliveryCharge, totalAmount }`; totals are computed by `computeTotals(pricing, quantity)` with `MIN_ORDER_QUANTITY`/`MAX_ORDER_QUANTITY` and `normalizeQuantity()`. `parseQuantity()` added to order validation. The server recomputes everything and ignores any client-supplied pricing.
+- `orders.book_price` stores the unit price; `total_amount = book_price * quantity + delivery_charge`. Existing rows default to `quantity = 1` and keep their totals.
+- Info cards and the order summary got clearer borders/shadows (`--shadow-card*`, `--glass-outline*` tokens; `.order-card`, `.order-summary`).
+- Reader end-of-preview detection extracted to `lastVisiblePage()`/`isPreviewEnd()` so a desktop spread includes its right-hand page and mobile single-page uses the current page.
+
+### Notes
+- Live `books.preview_page_count` set to 10 and the cached preview regenerated (serves all 7 source pages, capped at 10).
+- Applied `20261015120000` to the linked remote project. Two remote-only migration versions (`20261014234521`, `20261014234525`) were marked reverted to reconcile migration history; no schema/data was changed.
+
 ## [1.4.0] — 2026-10-15
 
 Migrated the backend from Firebase/Firestore to Supabase (Postgres + Storage + Realtime + RLS) and rebranded the display name.
